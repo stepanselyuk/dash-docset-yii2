@@ -47,7 +47,7 @@ $plist = '<?xml version="1.0" encoding="UTF-8"?>
 	<key>isDashDocset</key>
 	<true/>
 	<key>dashIndexFilePath</key>
-	<string>yii.html</string>
+	<string>index.html</string>
 	<key>isJavaScriptEnabled</key><true/>
 </dict>
 </plist>';
