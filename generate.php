@@ -113,15 +113,12 @@ foreach ( scandir( $docsetPath ) as $file ) {
 			if ( $name == '' ) $name = 'Guide';
 
 			add_to_index( $db, $name, 'Guide', $file );
-
-			echo 'Added "' . $name . '" as a Guide.' . PHP_EOL;
-
 		}
 		elseif ( strpos( $file, 'yii' ) === 0 ) {
 
 			$content = file_get_contents( build_path( $docsetPath, $file ) );
 
-			if ( preg_match( '/<h1>\n*(?:Abstract\s)?(Class|Class|Interface|Trait)\s([0-9a-zA-Z\\\]+)\n*<\/h1>/', $content, $m ) ) {
+			if ( preg_match( '/<h1>\n*(?:Abstract\s)?(Class|Interface|Trait)\s([0-9a-zA-Z\\\]+)\n*<\/h1>/', $content, $m ) ) {
 
 				$class = trim( $m[ 2 ] );
 
@@ -132,7 +129,6 @@ foreach ( scandir( $docsetPath ) as $file ) {
 					if ( stripos( $m[ 2 ], $type ) !== false ) {
 						add_to_index( $db, $class, $type, $file );
 					}
-
 				}
 
 			}
