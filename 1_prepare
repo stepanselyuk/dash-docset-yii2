@@ -1,0 +1,40 @@
+#!/bin/bash
+
+source "$( cd "$(dirname "$0")" ; pwd -P )/config.sh"
+
+rm -rf "./$docset"
+
+echo "Creating the docset dir ./$docset"
+mkdir -p "./$docset"
+
+echo "Downloading Yii2 guide"
+svn checkout https://github.com/yiisoft/yii2/trunk/docs/guide ./yii2-guide
+
+echo "Downloading Yii2-apidoc"
+svn checkout https://github.com/yiisoft/yii2-apidoc/trunk/ ./yii2-apidoc
+
+# go in
+cd yii2-apidoc
+
+echo "Downloading the Composer"
+curl -sS https://getcomposer.org/installer | $phpexec
+
+echo "Installing Yii2-apidoc"
+$phpexec composer.phar install
+
+echo "Handling Yii2 guide, 1st iteration."
+$phpexec ./apidoc guide "../yii2-guide" "../$docset"
+
+echo "Handling phpDoc in Yii2 files."
+$phpexec ./apidoc api ./vendor/yiisoft/yii2 "../$docset"
+
+echo "Handling Yii2 guide, 2nd iteration (creating links)"
+$phpexec ./apidoc guide "../yii2-guide" "../$docset"
+
+cd ..
+
+cp icon.png "./$docset/../../../icon.png"
+
+rm -rf "./$docset/cache"
+rm -f "./$docset/errors.txt"
+rm -f "./$docset/guide-references.txt"

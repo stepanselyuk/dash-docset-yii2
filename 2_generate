@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source "$( cd "$(dirname "$0")" ; pwd -P )/config.sh"
+
+$phpexec generate.php "$docset"
