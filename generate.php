@@ -8,9 +8,10 @@
  * Special thanks to https://github.com/akirk/dash-phpunit
  */
 
-function build_path() {
+function build_path()
+{
 
-	return implode( DIRECTORY_SEPARATOR, func_get_args() );
+    return implode( DIRECTORY_SEPARATOR, func_get_args() );
 }
 
 /**
@@ -19,13 +20,14 @@ function build_path() {
  * @param string  $type
  * @param string  $file
  */
-function add_to_index( $db, $name, $type, $file ) {
+function add_to_index( $db, $name, $type, $file )
+{
 
-	static $i = 0;
+    static $i = 0;
 
-	$db->query( 'INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES ("' . $name . '", "' . $type . '", "' . $file . '")' );
+    $db->query( 'INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES ("' . $name . '", "' . $type . '", "' . $file . '")' );
 
-	echo ++$i . '. Added "' . $name . '" as a ' . $type . ' in file ' . $file . PHP_EOL;
+    echo ++$i . '. Added "' . $name . '" as a ' . $type . ' in file ' . $file . PHP_EOL;
 }
 
 list( , $docsetPath ) = $argv;
@@ -54,8 +56,8 @@ $plist = '<?xml version="1.0" encoding="UTF-8"?>
 
 file_put_contents( build_path( $docsetPath, '../../Info.plist' ), $plist );
 
-if ( file_exists( build_path( $docsetPath, '../docSet.dsidx' ) ) ) {
-	@unlink( build_path( $docsetPath, '../docSet.dsidx' ) );
+if (file_exists( build_path( $docsetPath, '../docSet.dsidx' ) )) {
+    @unlink( build_path( $docsetPath, '../docSet.dsidx' ) );
 }
 
 // Creating SQLite DB
@@ -64,106 +66,113 @@ $db = new sqlite3( build_path( $docsetPath, '../docSet.dsidx' ) );
 $db->query( 'CREATE TABLE searchIndex(id INTEGER PRIMARY KEY, name TEXT, type TEXT, path TEXT)' );
 $db->query( 'CREATE UNIQUE INDEX anchor ON searchIndex (name, type, path)' );
 
-$extTypes = [ 'Callback',
-              'Command',
-              'Component',
-              'Constructor',
-              'Element',
-              'Entry',
-              'Error',
-              'Event',
-              'Exception',
-              'Field',
-              'File',
-              'Filter',
-              'Framework',
-              'Function',
-              'Instance',
-              'Library',
-              'Literal',
-              'Macro',
-              'Mixin',
-              'Module',
-              'Namespace',
-              'Object',
-              'Option',
-              'Package',
-              'Protocol',
-              'Record',
-              'Resource',
-              'Sample',
-              'Service',
-              'Struct',
-              'Style',
-              'Subroutine',
-              'Tag',
-              'Union',
-              'Value', ];
+$extTypes = [
+    'Callback',
+    'Command',
+    'Component',
+    'Constructor',
+    'Element',
+    'Entry',
+    'Error',
+    'Event',
+    'Exception',
+    'Field',
+    'File',
+    'Filter',
+    'Framework',
+    'Function',
+    'Instance',
+    'Library',
+    'Literal',
+    'Macro',
+    'Mixin',
+    'Module',
+    'Namespace',
+    'Object',
+    'Option',
+    'Package',
+    'Protocol',
+    'Record',
+    'Resource',
+    'Sample',
+    'Service',
+    'Struct',
+    'Style',
+    'Subroutine',
+    'Tag',
+    'Union',
+    'Value',
+];
 
-foreach ( scandir( $docsetPath ) as $file ) {
+foreach (scandir( $docsetPath ) as $file) {
 
-	if ( is_file( build_path( $docsetPath, $file ) ) && strpos( $file, '.html' ) !== false ) {
+    if (is_file( build_path( $docsetPath, $file ) ) && strpos( $file, '.html' ) !== false) {
 
-		if ( strpos( $file, 'guide' ) === 0 ) {
+        if (strpos( $file, 'guide' ) === 0) {
 
-			$name = substr( $file, strlen( 'guide-' ), -strlen( '.html' ) );
-			$name = str_replace( '-', ' ', $name );
-			$name = ucfirst( $name );
+            $content = file_get_contents( build_path( $docsetPath, $file ) );
 
-			if ( $name == '' ) $name = 'Guide';
+            if (preg_match( '/<h1>([\w\d\s]+).*<\/h1>/s', $content, $m )) {
 
-			add_to_index( $db, $name, 'Guide', $file );
-		}
-		elseif ( strpos( $file, 'yii' ) === 0 ) {
+                $title = trim( $m[ 1 ] );
 
-			$content = file_get_contents( build_path( $docsetPath, $file ) );
+                add_to_index( $db, $title, 'Guide', $file );
 
-			if ( preg_match( '/<h1>\n*(?:Abstract\s)?(Class|Interface|Trait)\s([0-9a-zA-Z\\\]+)\n*<\/h1>/', $content, $m ) ) {
+            } else {
 
-				$class = trim( $m[ 2 ] );
+                trigger_error( 'Can\'t find title in file ' . $file . PHP_EOL, E_ERROR );
+            }
 
-				add_to_index( $db, $class, $m[ 1 ], $file );
+        } elseif (strpos( $file, 'yii' ) === 0) {
 
-				foreach ( $extTypes as $type ) {
+            $content = file_get_contents( build_path( $docsetPath, $file ) );
 
-					if ( stripos( $m[ 2 ], $type ) !== false ) {
-						add_to_index( $db, $class, $type, $file );
-					}
-				}
+            if (preg_match( '/<h1>\n*(?:Abstract\s)?(Class|Interface|Trait)\s([0-9a-zA-Z\\\]+)\n*<\/h1>/', $content, $m )) {
 
-			}
-			else {
+                $class = trim( $m[ 2 ] );
 
-				trigger_error( 'Can\'t find class name in file ' . $file . PHP_EOL, E_ERROR );
-			}
+                add_to_index( $db, $class, $m[ 1 ], $file );
 
-			echo $class . PHP_EOL;
+                foreach ($extTypes as $type) {
 
-			if ( preg_match_all( '/<div class="summary doc-(property|method|event|const)">.*<table[^>]*>(.+)<\/table>.*<\/div>/sU', $content, $m, PREG_SET_ORDER ) ) {
+                    if (stripos( $m[ 2 ], $type ) !== false) {
+                        add_to_index( $db, $class, $type, $file );
+                    }
+                }
 
-				foreach ( $m as $item ) {
+            } else {
 
-					if ( preg_match_all( '/<tr[^>]*id="(.+)"[^>]*>.*<td[^>]*><a[^>]*href="(.+)".*<\/tr>/sU', $item[ 2 ], $k, PREG_SET_ORDER ) ) {
+                trigger_error( 'Can\'t find class name in file ' . $file . PHP_EOL, E_ERROR );
+            }
 
-						foreach ( $k as $elem ) {
+            echo $class . PHP_EOL;
 
-							$type = ucfirst( $item[ 1 ] );
-							if ( $type == 'Const' ) $type = 'Constant';
+            if (preg_match_all( '/<div class="summary doc-(property|method|event|const)">.*<table[^>]*>(.+)<\/table>.*<\/div>/sU', $content, $m, PREG_SET_ORDER )) {
 
-							add_to_index( $db, $class . '::' . $elem[ 1 ], $type, $elem[ 2 ] );
-						}
+                foreach ($m as $item) {
 
-					}
+                    if (preg_match_all( '/<tr[^>]*id="(.+)"[^>]*>.*<td[^>]*><a[^>]*href="(.+)".*<\/tr>/sU', $item[ 2 ], $k, PREG_SET_ORDER )) {
 
-				}
+                        foreach ($k as $elem) {
 
-			}
-			else {
+                            $type = ucfirst( $item[ 1 ] );
+                            if ($type == 'Const') {
+                                $type = 'Constant';
+                            }
 
-				trigger_error( 'Can\'t find any sections in file ' . $file . PHP_EOL, E_ERROR );
-			}
+                            add_to_index( $db, $class . '::' . $elem[ 1 ], $type, $elem[ 2 ] );
+                        }
 
-		}
+                    }
 
-	}
+                }
+
+            } else {
+
+                trigger_error( 'Can\'t find any sections in file ' . $file . PHP_EOL, E_ERROR );
+            }
+
+        }
+
+    }
 }
