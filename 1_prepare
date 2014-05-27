@@ -21,6 +21,7 @@ curl -sS https://getcomposer.org/installer | $phpexec
 
 echo "Installing Yii2-apidoc"
 $phpexec composer.phar install
+$phpexec composer.phar update
 
 echo "Handling Yii2 guide, 1st iteration."
 $phpexec ./apidoc guide "../yii2-guide" "../$docset"
