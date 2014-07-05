@@ -1,0 +1,7 @@
+#!/bin/bash
+
+runpath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$runpath"
+
+sh 1_prepare
+sh 2_generate
