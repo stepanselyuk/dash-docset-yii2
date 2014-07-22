@@ -5,3 +5,5 @@ cd "$runpath"
 
 sh 1_prepare
 sh 2_generate
+
+tar --exclude='.DS_Store' -cvzf Yii2.tgz Yii2.docset

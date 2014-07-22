@@ -35,6 +35,7 @@ $phpexec ./apidoc guide "../yii2-guide" "../$docset"
 cd ..
 
 cp icon.png "./$docset/../../../icon.png"
+cp icon@2x.png "./$docset/../../../icon@2x.png"
 
 rm -rf "./$docset/cache"
 rm -f "./$docset/errors.txt"
