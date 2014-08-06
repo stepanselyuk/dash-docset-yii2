@@ -3,7 +3,9 @@
 runpath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$runpath"
 
+tar --exclude='.DS_Store' -cvzf Yii2-prev.tar.gz Yii2.docset
+
 sh 1_prepare
 sh 2_generate
 
-tar --exclude='.DS_Store' -cvzf Yii2.tgz Yii2.docset
+tar --exclude='.DS_Store' -cvzf Yii2.tar.gz Yii2.docset
