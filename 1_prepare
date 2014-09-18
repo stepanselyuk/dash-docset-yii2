@@ -8,9 +8,14 @@ echo "Creating the docset dir ./$docset"
 mkdir -p "./$docset"
 
 echo "Downloading Yii2 guide"
+# git clone https://github.com/yiisoft/yii2
 svn checkout https://github.com/yiisoft/yii2/trunk/docs/guide ./yii2-guide
 
+# usable for git
+#ln -s ./yii2/docs/guide ./yii2-guide
+
 echo "Downloading Yii2-apidoc"
+# git clone https://github.com/yiisoft/yii2-apidoc
 svn checkout https://github.com/yiisoft/yii2-apidoc/trunk/ ./yii2-apidoc
 
 # go in
@@ -19,8 +24,13 @@ cd yii2-apidoc
 echo "Downloading the Composer"
 curl -sS https://getcomposer.org/installer | $phpexec
 
+echo "Installing plugin fxp/composer-asset-plugin to Composer"
+$phpexec composer.phar global require "fxp/composer-asset-plugin:1.0.*@dev"
+
 echo "Installing Yii2-apidoc"
 $phpexec composer.phar install
+
+echo "Updating Yii2-apidoc (fallback)"
 $phpexec composer.phar update
 
 echo "Handling Yii2 guide, 1st iteration."
